@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linka — Tecnologia & Administração</title>
+  <meta name="description" content="Amostra interativa sobre tecnologia aplicada à administração: pesquisa, história, desenvolvimento web, segurança digital e IA.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Fundo animado de partículas -->
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <!-- Barra de navegação com a logo no cantinho -->
+  <header class="nav" id="nav">
+    <a class="brand" href="#inicio" aria-label="Linka — início">
+      <span class="logo" id="logo-slot"><span class="logo-fallback">L</span></span>
+      <span class="brand-name">LINKA</span>
+    </a>
+    <button class="menu-btn" id="menu-btn" aria-label="Abrir menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="menu" id="menu">
+      <a href="#pesquisa">Pesquisa</a>
+      <a href="#linha-do-tempo">Linha do tempo</a>
+      <a href="#sites">Desenvolvimento de sites</a>
+      <a href="#seguranca">Segurança digital</a>
+      <a href="#ia">IA</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- INÍCIO -->
+    <section class="hero" id="inicio">
+      <p class="eyebrow reveal">// amostra interativa</p>
+      <h1 class="glitch reveal" data-text="LINKA">LINKA</h1>
+      <p class="tagline reveal">Onde a <strong>tecnologia</strong> e a <strong>administração</strong> se conectam.</p>
+      <div class="hero-cta reveal">
+        <a class="btn" href="#pesquisa">Explorar a amostra</a>
+        <a class="btn ghost" href="#ia">Falar de IA</a>
+      </div>
+      <a class="scroll-hint" href="#pesquisa" aria-label="Rolar para baixo"><span></span></a>
+    </section>
+
+    <!-- 1. PESQUISA -->
+    <section class="section" id="pesquisa">
+      <header class="section-head reveal">
+        <span class="tag">01</span>
+        <h2>Pesquisa</h2>
+        <p>Como as empresas passaram a adotar tecnologia entre 2018 e 2026 e quais regiões do Brasil lideram o uso na administração.</p>
+      </header>
+      <div class="card placeholder reveal">
+        <p class="ph-title">Gráfico 2018–2026 + mapa interativo do Brasil</p>
+        <p class="ph-sub">Em construção — próximo passo.</p>
+      </div>
+    </section>
+
+    <!-- 2. LINHA DO TEMPO -->
+    <section class="section" id="linha-do-tempo">
+      <header class="section-head reveal">
+        <span class="tag">02</span>
+        <h2>Linha do tempo</h2>
+        <p>Das ferramentas de escritório de antigamente até a administração digital de hoje.</p>
+      </header>
+      <div class="card placeholder reveal">
+        <p class="ph-title">Linha do tempo animada com fotos</p>
+        <p class="ph-sub">Em construção — passo 3.</p>
+      </div>
+    </section>
+
+    <!-- 3. DESENVOLVIMENTO DE SITES -->
+    <section class="section" id="sites">
+      <header class="section-head reveal">
+        <span class="tag">03</span>
+        <h2>Desenvolvimento de sites</h2>
+        <p>Veja, passo a passo, como uma ideia vira um site no ar.</p>
+      </header>
+      <div class="card placeholder reveal">
+        <p class="ph-title">Área interativa de como um site é construído</p>
+        <p class="ph-sub">Em construção — passo 4.</p>
+      </div>
+    </section>
+
+    <!-- 4. SEGURANÇA DIGITAL -->
+    <section class="section" id="seguranca">
+      <header class="section-head reveal">
+        <span class="tag">04</span>
+        <h2>Segurança digital</h2>
+        <p>Crie uma senha e descubra, de um jeito divertido, se ela é fraca, média ou forte.</p>
+      </header>
+      <div class="card placeholder reveal">
+        <p class="ph-title">Testador de senhas descontraído</p>
+        <p class="ph-sub">Em construção — passo 5.</p>
+      </div>
+    </section>
+
+    <!-- 5. IA -->
+    <section class="section" id="ia">
+      <header class="section-head reveal">
+        <span class="tag">05</span>
+        <h2>Inteligência Artificial</h2>
+        <p>O que é a IA, como ela funciona e como ajuda quem administra.</p>
+      </header>
+      <div class="card placeholder reveal">
+        <p class="ph-title">Área interativa sobre IA</p>
+        <p class="ph-sub">Em construção — passo 6.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p><span class="brand-name">LINKA</span> · Amostra sobre tecnologia e administração · 2026</p>
+  </footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
