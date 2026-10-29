@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINKA - Tecnologia na Administração</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Orbitron & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            black: '#080810',
+                            dark: '#0f1021',
+                            card: 'rgba(23, 25, 50, 0.65)',
+                            cyan: '#00f3ff',
+                            magenta: '#ff0055',
+                            purple: '#b026ff',
+                            green: '#00ff66'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 15px rgba(0, 243, 255, 0.5), 0 0 30px rgba(0, 243, 255, 0.2)',
+                        'neon-magenta': '0 0 15px rgba(255, 0, 85, 0.5), 0 0 30px rgba(255, 0, 85, 0.2)',
+                        'neon-purple': '0 0 15px rgba(176, 38, 255, 0.5), 0 0 30px rgba(176, 38, 255, 0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #080810;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Background Animated Mesh */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(15, 16, 35, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(0, 243, 255, 0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080810;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00f3ff;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff0055;
+        }
+
+        /* Glow Text Effect */
+        .glow-text-cyan {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.7), 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+        .glow-text-magenta {
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.7), 0 0 20px rgba(255, 0, 85, 0.4);
+        }
+
+        /* SVG Map Hover Effect */
+        .map-region {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            fill: #1e293b;
+            stroke: #00f3ff;
+            stroke-width: 1.5;
+        }
+        .map-region:hover {
+            fill: #00f3ff;
+            fill-opacity: 0.3;
+            filter: drop-shadow(0px 0px 8px #00f3ff);
+        }
+        .map-region.active {
+            fill: #ff0055;
+            fill-opacity: 0.5;
+            stroke: #ff0055;
+        }
+
+        /* Custom Pulse Keyframe */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.02); }
+        }
+        .pulse-element {
+            animation: pulse-slow 4s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="selection:bg-cyber-cyan selection:text-black">
+
+    <!-- Fundo Interativo de Partículas/Canvas -->
+    <canvas id="canvas-bg"></canvas>
+
+    <!-- HEADER / NAVEGAÇÃO -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-panel border-b border-cyber-cyan/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- LOGO DA MARCA & SLOTS DE LOGO -->
+            <div class="flex items-center gap-4">
+                <!-- 
+                  ========================================================================
+                  [CAMPO PARA SUA LOGO PERSONALIZADA]
+                  Substitua o atributo 'src' abaixo pela URL/Caminho da sua imagem de logo!
+                  ========================================================================
+                -->
+                <div class="relative group">
+                    <img id="logo-image" 
+                         data-logo-id="linka-main-logo" 
+                         src="https://placehold.co/100x100/0f1021/00f3ff?text=LINKA" 
+                         alt="LINKA Logo" 
+                         class="h-12 w-12 object-contain rounded-lg border border-cyber-cyan shadow-neon-cyan transition-transform group-hover:scale-105"
+                         onerror="this.src='https://placehold.co/100x100/0f1021/00f3ff?text=LINKA'">
+                    <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyber-cyan opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-cyber-cyan"></span>
+                    </span>
+                </div>
+
+                <!-- Nome da Marca com Estilo Neon -->
+                <div class="flex flex-col">
+                    <span class="font-orbitron font-black text-2xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-white to-cyber-magenta glow-text-cyan">
+                        LINKA
+                    </span>
+                    <span class="text-[10px] tracking-widest text-cyber-cyan font-mono uppercase">Tech & Mgmt System</span>
+                </div>
+            </div>
+
+            <!-- MENU DE NAVEGAÇÃO DESKTOP -->
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold tracking-wide">
+                <a href="#pesquisa" class="hover:text-cyber-cyan transition-colors flex items-center gap-1.5 py-1 px-3 rounded hover:bg-cyber-cyan/10">
+                    <i class="fa-solid fa-chart-line text-cyber-cyan"></i> Pesquisa
+                </a>
+                <a href="#timeline" class="hover:text-cyber-cyan transition-colors flex items-center gap-1.5 py-1 px-3 rounded hover:bg-cyber-cyan/10">
+                    <i class="fa-solid fa-timeline text-cyber-magenta"></i> Linha do Tempo
+                </a>
+                <a href="#webdev" class="hover:text-cyber-cyan transition-colors flex items-center gap-1.5 py-1 px-3 rounded hover:bg-cyber-cyan/10">
+                    <i class="fa-solid fa-code text-cyber-purple"></i> Web Dev
+                </a>
+                <a href="#seguranca" class="hover:text-cyber-cyan transition-colors flex items-center gap-1.5 py-1 px-3 rounded hover:bg-cyber-cyan/10">
+                    <i class="fa-solid fa-shield-halved text-cyber-green"></i> Segurança
+                </a>
+                <a href="#ia" class="hover:text-cyber-cyan transition-colors flex items-center gap-1.5 py-1 px-3 rounded hover:bg-cyber-cyan/10">
+                    <i class="fa-solid fa-brain text-cyber-magenta"></i> IA na Gestão
+                </a>
+            </nav>
+
+            <!-- BOTAO REPOS GITHUB / BOTÃO MOBILE -->
+            <div class="flex items-center gap-3">
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer" 
+                   class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-md bg-cyber-cyan/10 border border-cyber-cyan/50 text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all font-mono text-xs font-bold shadow-neon-cyan">
+                    <i class="fa-brands fa-github text-base"></i> GitHub Repo
+                </a>
+
+                <button id="mobile-menu-btn" class="md:hidden text-cyber-cyan text-2xl p-2 focus:outline-none">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- MENU MOBILE DROPDOWN -->
+        <div id="mobile-menu" class="hidden md:hidden glass-panel border-t border-cyber-cyan/20 px-4 pt-2 pb-4 space-y-2">
+            <a href="#pesquisa" class="mobile-link block py-2 px-3 rounded hover:bg-cyber-cyan/20 text-cyber-cyan"><i class="fa-solid fa-chart-line mr-2"></i> Pesquisa</a>
+            <a href="#timeline" class="mobile-link block py-2 px-3 rounded hover:bg-cyber-cyan/20 text-cyber-magenta"><i class="fa-solid fa-timeline mr-2"></i> Linha do Tempo</a>
+            <a href="#webdev" class="mobile-link block py-2 px-3 rounded hover:bg-cyber-cyan/20 text-cyber-purple"><i class="fa-solid fa-code mr-2"></i> Web Dev</a>
+            <a href="#seguranca" class="mobile-link block py-2 px-3 rounded hover:bg-cyber-cyan/20 text-cyber-green"><i class="fa-solid fa-shield-halved mr-2"></i> Segurança</a>
+            <a href="#ia" class="mobile-link block py-2 px-3 rounded hover:bg-cyber-cyan/20 text-cyber-magenta"><i class="fa-solid fa-brain mr-2"></i> IA na Gestão</a>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="min-h-screen pt-32 pb-16 flex items-center justify-center relative overflow-hidden px-4">
+        <div class="max-w-5xl mx-auto text-center z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyber-cyan/40 bg-cyber-cyan/5 text-cyber-cyan text-xs font-mono mb-6 shadow-neon-cyan">
+                <span class="w-2 h-2 rounded-full bg-cyber-green animate-pulse"></span>
+                MOSTRA TECNOLÓGICA & ADMINISTRAÇÃO 2026
+            </div>
+            
+            <h1 class="font-orbitron text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-white mb-6 leading-tight">
+                CONEXÃO ENTRE <br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta glow-text-cyan">
+                    TECNOLOGIA E GESTÃO
+                </span>
+            </h1>
+
+            <p class="text-gray-300 text-base sm:text-lg max-w-3xl mx-auto mb-10 font-light leading-relaxed">
+                Descubra como a evolução tecnológica redefiniu a gestão empresarial no Brasil e no mundo. Navegue pelos dados reais de adoção digital, do legado aos algoritmos avançados de Inteligência Artificial.
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-4">
+                <a href="#pesquisa" class="px-8 py-4 rounded-lg bg-cyber-cyan text-black font-orbitron font-bold text-sm tracking-wider hover:bg-white hover:shadow-neon-cyan transition-all transform hover:-translate-y-0.5">
+                    EXPLORAR DADOS <i class="fa-solid fa-arrow-down ml-2"></i>
+                </a>
+                <a href="#ia" class="px-8 py-4 rounded-lg glass-panel text-white border border-cyber-magenta/50 font-orbitron font-bold text-sm tracking-wider hover:bg-cyber-magenta/20 hover:border-cyber-magenta transition-all">
+                    TESTAR SIMULADOR IA <i class="fa-solid fa-robot ml-2 text-cyber-magenta"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-32 pb-24">
+
+        <!-- SEÇÃO 1: PESQUISA & MAPA BRASIL -->
+        <section id="pesquisa" class="scroll-mt-28">
+            <div class="border-l-4 border-cyber-cyan pl-4 mb-8">
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-bold text-white tracking-wide">
+                    01. PESQUISA & panorama NACIONAL
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Transformação Digital na Administração Empresarial e Pública (2018 - 2026)</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- GRÁFICO DE EVOLUÇÃO (CHART.JS) -->
+                <div class="lg:col-span-7 glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="font-orbitron text-lg font-bold text-cyber-cyan flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line"></i> Adoção de Tecnologias em Empresas (%)
+                            </h3>
+                            <p class="text-xs text-gray-400">Aumento no uso estratégico de dados, nuvem e IA na gestão</p>
+                        </div>
+                        <span class="text-xs font-mono bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan px-2.5 py-1 rounded">2018 - 2026</span>
+                    </div>
+                    
+                    <div class="relative w-full h-[320px] sm:h-[360px]">
+                        <canvas id="adoptionChart"></canvas>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-400 flex flex-wrap justify-between gap-2">
+                        <span><i class="fa-solid fa-database text-cyber-cyan mr-1"></i> Fonte: FGV CIA / IBGE (PNTIC) / McKinsey Global Survey</span>
+                        <span class="text-cyber-green font-semibold"><i class="fa-solid fa-arrow-trend-up"></i> +140% de crescimento acumulado</span>
+                    </div>
+                </div>
+
+                <!-- MAPA INTERATIVO DO BRASIL -->
+                <div class="lg:col-span-5 glass-panel p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-orbitron text-lg font-bold text-cyber-magenta flex items-center gap-2 mb-1">
+                            <i class="fa-solid fa-map-location-dot"></i> Concentração por Região
+                        </h3>
+                        <p class="text-xs text-gray-400 mb-4">Clique nas regiões do mapa para analisar o índice de digitalização administrativa.</p>
+
+                        <!-- SVG MAPA DO BRASIL SIMPLIFICADO POR REGIÕES -->
+                        <div class="relative flex justify-center py-2">
+                            <svg viewBox="0 0 500 500" class="w-full max-w-[280px] h-auto filter drop-shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                                <!-- NORTE -->
+                                <path d="M 60 120 L 220 80 L 260 180 L 170 240 L 70 210 Z" class="map-region" data-region="norte" />
+                                <!-- NORDESTE -->
+                                <path d="M 220 80 L 420 70 L 440 180 L 320 200 L 260 180 Z" class="map-region" data-region="nordeste" />
+                                <!-- CENTRO-OESTE -->
+                                <path d="M 170 240 L 260 180 L 320 200 L 300 320 L 200 320 Z" class="map-region" data-region="centro" />
+                                <!-- SUDESTE -->
+                                <path d="M 320 200 L 440 180 L 400 330 L 300 320 Z" class="map-region active" data-region="sudeste" />
+                                <!-- SUL -->
+                                <path d="M 200 320 L 300 320 L 280 430 L 210 420 Z" class="map-region" data-region="sul" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- CARD DE DETALHES DA REGIÃO -->
+                    <div id="region-info" class="mt-4 p-4 rounded-xl bg-cyber-dark/80 border border-cyber-cyan/30">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 id="region-name" class="font-orbitron font-bold text-cyber-cyan text-base">Região Sudeste</h4>
+                            <span id="region-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyber-cyan text-black">LÍDER NACIONAL</span>
+                        </div>
+                        <p id="region-desc" class="text-xs text-gray-300 leading-relaxed mb-3">
+                            Concentra o maior volume de startups (GovTechs e FinTechs) e empresas com ERPs integrados em nuvem.
+                        </p>
+                        <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div class="bg-gray-900/60 p-2 rounded border border-gray-800">
+                                <span class="text-gray-400 block">Adoção Digital:</span>
+                                <span id="region-rate" class="text-cyber-green font-bold text-sm">88.4%</span>
+                            </div>
+                            <div class="bg-gray-900/60 p-2 rounded border border-gray-800">
+                                <span class="text-gray-400 block">Foco Principal:</span>
+                                <span id="region-focus" class="text-cyber-cyan font-bold">ERP Cloud & IA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SEÇÃO 2: LINHA DO TEMPO DA TECNOLOGIA NA ADM -->
+        <section id="timeline" class="scroll-mt-28">
+            <div class="border-l-4 border-cyber-magenta pl-4 mb-12">
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-bold text-white tracking-wide">
+                    02. LINHA DO TEMPO DA EVOLUÇÃO
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Das fichas de papel aos ecossistemas hiperconectados e autônomos</p>
+            </div>
+
+            <!-- CONTAINER TIMELINE -->
+            <div class="relative border-l-2 border-cyber-cyan/30 ml-4 sm:ml-32 space-y-12">
+                
+                <!-- TIMELINE ITEM 1 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-[17px] top-1 w-8 h-8 rounded-full bg-cyber-dark border-2 border-cyber-cyan flex items-center justify-center text-cyber-cyan group-hover:bg-cyber-cyan group-hover:text-black transition-all">
+                        <i class="fa-solid fa-font text-xs"></i>
+                    </div>
+                    <span class="sm:absolute sm:-left-32 sm:top-1 font-orbitron text-sm font-bold text-cyber-cyan bg-cyber-cyan/10 px-2 py-1 rounded border border-cyber-cyan/30 inline-block mb-2 sm:mb-0">
+                        1970 - 1980
+                    </span>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <img src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=400&q=80" alt="Máquina de Escrever" class="w-full md:w-48 h-32 object-cover rounded-xl border border-gray-700">
+                            <div>
+                                <h3 class="font-orbitron text-xl font-bold text-white mb-2">A Era Mecânica e Telefônica</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                                    Processos administrativos dependiam fortemente de arquivos físicos, fichários suspensos, calculadoras mecânicas, telex e máquinas de escrever. O arquivamento levava dias e o extravio de relatórios era comum.
+                                </p>
+                                <div class="flex flex-wrap gap-2 text-xs font-mono text-gray-400">
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#Fichários</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#Datilografia</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#Telégrafo</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE ITEM 2 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-[17px] top-1 w-8 h-8 rounded-full bg-cyber-dark border-2 border-cyber-magenta flex items-center justify-center text-cyber-magenta group-hover:bg-cyber-magenta group-hover:text-black transition-all">
+                        <i class="fa-solid fa-floppy-disk text-xs"></i>
+                    </div>
+                    <span class="sm:absolute sm:-left-32 sm:top-1 font-orbitron text-sm font-bold text-cyber-magenta bg-cyber-magenta/10 px-2 py-1 rounded border border-cyber-magenta/30 inline-block mb-2 sm:mb-0">
+                        ANOS 1990
+                    </span>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=400&q=80" alt="Computador Antigo" class="w-full md:w-48 h-32 object-cover rounded-xl border border-gray-700">
+                            <div>
+                                <h3 class="font-orbitron text-xl font-bold text-white mb-2">Revolução do PC & Planilhas Eletrônicas</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                                    A chegada do Windows 95, disquetes, Lotus 1-2-3 e Microsoft Excel transformou os escritórios. O e-mail começou a substituir correspondências físicas, acelerando a tomada de decisão.
+                                </p>
+                                <div class="flex flex-wrap gap-2 text-xs font-mono text-gray-400">
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#Excel97</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#Windows95</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#Disquetes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE ITEM 3 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-[17px] top-1 w-8 h-8 rounded-full bg-cyber-dark border-2 border-cyber-purple flex items-center justify-center text-cyber-purple group-hover:bg-cyber-purple group-hover:text-black transition-all">
+                        <i class="fa-solid fa-network-wired text-xs"></i>
+                    </div>
+                    <span class="sm:absolute sm:-left-32 sm:top-1 font-orbitron text-sm font-bold text-cyber-purple bg-cyber-purple/10 px-2 py-1 rounded border border-cyber-purple/30 inline-block mb-2 sm:mb-0">
+                        ANOS 2000
+                    </span>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80" alt="Servidores e ERP" class="w-full md:w-48 h-32 object-cover rounded-xl border border-gray-700">
+                            <div>
+                                <h3 class="font-orbitron text-xl font-bold text-white mb-2">ERPs Integrados & Internet Banda Larga</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                                    Sistemas como SAP e TOTVS centralizam financeiro, RH e estoque em um só banco de dados. A expansão da internet de alta velocidade e do formato PDF elimina toneladas de papel das empresas.
+                                </p>
+                                <div class="flex flex-wrap gap-2 text-xs font-mono text-gray-400">
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#SistemasERP</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#BandaLarga</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#GestãoIntegrada</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE ITEM 4 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-[17px] top-1 w-8 h-8 rounded-full bg-cyber-dark border-2 border-cyber-green flex items-center justify-center text-cyber-green group-hover:bg-cyber-green group-hover:text-black transition-all">
+                        <i class="fa-solid fa-cloud text-xs"></i>
+                    </div>
+                    <span class="sm:absolute sm:-left-32 sm:top-1 font-orbitron text-sm font-bold text-cyber-green bg-cyber-green/10 px-2 py-1 rounded border border-cyber-green/30 inline-block mb-2 sm:mb-0">
+                        ANOS 2010
+                    </span>
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&q=80" alt="Cloud & BI" class="w-full md:w-48 h-32 object-cover rounded-xl border border-gray-700">
+                            <div>
+                                <h3 class="font-orbitron text-xl font-bold text-white mb-2">Computação em Nuvem & Dashboards BI</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                                    Modelos SaaS (Software as a Service) ganham força. Gestores passam a acessar relatórios em tempo real de qualquer lugar através de plataformas como Power BI e CRMs integrados.
+                                </p>
+                                <div class="flex flex-wrap gap-2 text-xs font-mono text-gray-400">
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#CloudSaaS</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#PowerBI</span>
+                                    <span class="bg-gray-800 px-2 py-1 rounded">#BigData</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE ITEM 5 -->
+                <div class="relative pl-8 sm:pl-12 group">
+                    <div class="absolute -left-[17px] top-1 w-8 h-8 rounded-full bg-cyber-cyan border-2 border-cyber-cyan flex items-center justify-center text-black shadow-neon-cyan animate-pulse">
+                        <i class="fa-solid fa-brain text-xs"></i>
+                    </div>
+                    <span class="sm:absolute sm:-left-32 sm:top-1 font-orbitron text-sm font-bold text-cyber-cyan bg-cyber-cyan text-black px-2 py-1 rounded shadow-neon-cyan inline-block mb-2 sm:mb-0">
+                        2020 - 2026
+                    </span>
+                    <div class="glass-panel p-6 rounded-2xl border-cyber-cyan/50 shadow-neon-cyan">
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80" alt="IA e Futuro" class="w-full md:w-48 h-32 object-cover rounded-xl border border-cyber-cyan">
+                            <div>
+                                <h3 class="font-orbitron text-xl font-bold text-cyber-cyan mb-2">IA Operacional & Automação Inteligente</h3>
+                                <p class="text-gray-300 text-sm leading-relaxed mb-3">
+                                    Decisões automatizadas por Inteligência Artificial Generativa, agentes autônomos de atendimento, RPA (Robotic Process Automation) e análise preditiva financeira dominam o mercado global.
+                                </p>
+                                <div class="flex flex-wrap gap-2 text-xs font-mono text-cyber-cyan">
+                                    <span class="bg-cyber-cyan/10 border border-cyber-cyan/40 px-2 py-1 rounded">#GenAI</span>
+                                    <span class="bg-cyber-cyan/10 border border-cyber-cyan/40 px-2 py-1 rounded">#RPA</span>
+                                    <span class="bg-cyber-cyan/10 border border-cyber-cyan/40 px-2 py-1 rounded">#PredictiveAnalytics</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3: DESENVOLVIMENTO DE SITES (LAB INTERATIVO) -->
+        <section id="webdev" class="scroll-mt-28">
+            <div class="border-l-4 border-cyber-purple pl-4 mb-8">
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-bold text-white tracking-wide">
+                    03. COMO FUNCIONA UM SITE WEB
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Simulador de arquitetura front-end & infraestrutura de hospedagem</p>
+            </div>
+
+            <!-- INTERACTIVE LAB -->
+            <div class="glass-panel p-6 sm:p-8 rounded-2xl">
+                <p class="text-sm text-gray-300 mb-6">
+                    Clique nas etapas do pipeline abaixo para visualizar como cada camada constrói a experiência digital de uma empresa:
+                </p>
+
+                <!-- PIPELINE STEPS BUTTONS -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8" id="dev-steps">
+                    <button data-step="ux" class="dev-btn active p-3 rounded-xl border border-cyber-cyan bg-cyber-cyan/20 text-cyber-cyan font-orbitron text-xs font-bold transition-all flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-pen-ruler text-lg"></i>
+                        <span>1. UI/UX Plan</span>
+                    </button>
+                    <button data-step="html" class="dev-btn p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-400 font-orbitron text-xs font-bold transition-all flex flex-col items-center gap-2 hover:border-cyber-cyan">
+                        <i class="fa-brands fa-html5 text-lg"></i>
+                        <span>2. HTML (Estrutura)</span>
+                    </button>
+                    <button data-step="css" class="dev-btn p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-400 font-orbitron text-xs font-bold transition-all flex flex-col items-center gap-2 hover:border-cyber-cyan">
+                        <i class="fa-brands fa-css3-alt text-lg"></i>
+                        <span>3. CSS (Estilo)</span>
+                    </button>
+                    <button data-step="js" class="dev-btn p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-400 font-orbitron text-xs font-bold transition-all flex flex-col items-center gap-2 hover:border-cyber-cyan">
+                        <i class="fa-brands fa-square-js text-lg"></i>
+                        <span>4. JS (Lógica)</span>
+                    </button>
+                    <button data-step="backend" class="dev-btn p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-400 font-orbitron text-xs font-bold transition-all flex flex-col items-center gap-2 hover:border-cyber-cyan">
+                        <i class="fa-solid fa-server text-lg"></i>
+                        <span>5. Cloud / DB</span>
+                    </button>
+                    <button data-step="deploy" class="dev-btn p-3 rounded-xl border border-gray-700 bg-gray-900/50 text-gray-400 font-orbitron text-xs font-bold transition-all flex flex-col items-center gap-2 hover:border-cyber-cyan">
+                        <i class="fa-brands fa-github text-lg"></i>
+                        <span>6. Deploy Pages</span>
+                    </button>
+                </div>
+
+                <!-- PREVIEW DISPLAY AREA -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center bg-cyber-dark/90 p-6 rounded-xl border border-cyber-purple/30">
+                    <div>
+                        <div class="flex items-center gap-2 text-cyber-purple font-mono text-xs mb-2">
+                            <i class="fa-solid fa-terminal"></i> ETAPA SELECIONADA
+                        </div>
+                        <h3 id="step-title" class="font-orbitron text-2xl font-bold text-white mb-3">1. UI/UX & Planejamento</h3>
+                        <p id="step-desc" class="text-gray-300 text-sm leading-relaxed mb-4">
+                            Tudo começa no protótipo. Mapeiam-se os requisitos de negócios, personas do cliente e jornada do usuário antes de escrever qualquer linha de código.
+                        </p>
+                        <div id="step-code" class="font-mono text-xs bg-black/80 p-4 rounded-lg border border-gray-800 text-cyber-cyan overflow-x-auto">
+                            // Wireframe & Figma Blueprint<br>
+                            const projectScope = {<br>
+                            &nbsp;&nbsp;targetAudience: "Gestores Empresariais",<br>
+                            &nbsp;&nbsp;responsive: true,<br>
+                            &nbsp;&nbsp;theme: "Cyberpunk Futuristic"<br>
+                            };
+                        </div>
+                    </div>
+
+                    <!-- LIVE PREVIEW BOX -->
+                    <div class="flex flex-col items-center justify-center min-h-[220px] p-6 rounded-xl bg-black/50 border border-cyber-cyan/30 text-center relative overflow-hidden">
+                        <div id="preview-stage" class="w-full transition-all duration-500">
+                            <div class="border border-dashed border-cyber-cyan/50 p-6 rounded-lg text-cyber-cyan">
+                                <i class="fa-solid fa-drafting-compass text-4xl mb-2 animate-bounce"></i>
+                                <p class="font-orbitron text-sm">Esboço Blueprint Ativo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4: SEGURANÇA DIGITAL (TESTADOR DIVERTIDO) -->
+        <section id="seguranca" class="scroll-mt-28">
+            <div class="border-l-4 border-cyber-green pl-4 mb-8">
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-bold text-white tracking-wide">
+                    04. CIBERSEGURANÇA CORPORATIVA
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Teste a força da sua senha e proteja os dados da sua empresa</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- SIMULADOR DE SENHAS -->
+                <div class="lg:col-span-7 glass-panel p-6 sm:p-8 rounded-2xl">
+                    <h3 class="font-orbitron text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-cyber-green"></i> Cyber Password Evaluator
+                    </h3>
+                    <p class="text-xs text-gray-400 mb-6">Digite uma senha hipotética para verificar a resistência contra ataques cibernéticos:</p>
+
+                    <div class="relative mb-4">
+                        <input type="password" id="pass-input" placeholder="Digite sua senha de teste..." 
+                               class="w-full bg-cyber-dark/90 border-2 border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 font-mono focus:outline-none focus:border-cyber-green transition-all text-sm">
+                        <button id="toggle-pass" class="absolute right-3 top-3 text-gray-400 hover:text-white">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- BARRA DE FORÇA -->
+                    <div class="w-full bg-gray-900 rounded-full h-3 mb-4 overflow-hidden border border-gray-800">
+                        <div id="pass-strength-bar" class="h-full w-0 transition-all duration-500 bg-red-500"></div>
+                    </div>
+
+                    <!-- MENSAGEM / FEEDBACK DIVERTIDO -->
+                    <div id="pass-feedback" class="p-4 rounded-xl bg-cyber-dark/80 border border-gray-800 mb-6 flex items-start gap-3">
+                        <i id="pass-icon" class="fa-solid fa-shield-cat text-2xl text-gray-500 mt-0.5"></i>
+                        <div>
+                            <h4 id="pass-status" class="font-orbitron font-bold text-sm text-gray-400">Aguardando senha...</h4>
+                            <p id="pass-comment" class="text-xs text-gray-400 mt-1">Digite algo acima para simular os algoritmos de segurança!</p>
+                        </div>
+                    </div>
+
+                    <!-- REQUISITOS CHECKLIST -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
+                        <div id="chk-length" class="p-2 rounded bg-gray-900/60 text-gray-500 border border-gray-800 text-center">
+                            8+ Caracteres
+                        </div>
+                        <div id="chk-num" class="p-2 rounded bg-gray-900/60 text-gray-500 border border-gray-800 text-center">
+                            Números (0-9)
+                        </div>
+                        <div id="chk-upper" class="p-2 rounded bg-gray-900/60 text-gray-500 border border-gray-800 text-center">
+                            Maiúsculas
+                        </div>
+                        <div id="chk-special" class="p-2 rounded bg-gray-900/60 text-gray-500 border border-gray-800 text-center">
+                            Símbolos (@#$)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DICAS DE BIOSSEGURANÇA CORPORATIVA -->
+                <div class="lg:col-span-5 glass-panel p-6 sm:p-8 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-orbitron text-lg font-bold text-cyber-cyan mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-user-shield"></i> Boas Práticas na Gestão
+                        </h3>
+                        
+                        <ul class="space-y-4 text-xs text-gray-300">
+                            <li class="flex items-start gap-3">
+                                <span class="p-2 rounded bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30 shrink-0">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                </span>
+                                <div>
+                                    <strong class="text-white block text-sm">Autenticação em 2 Fatores (2FA)</strong>
+                                    Sempre ative verificação em duas etapas em e-mails corporativos e sistemas ERP.
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="p-2 rounded bg-cyber-magenta/10 text-cyber-magenta border border-cyber-magenta/30 shrink-0">
+                                    <i class="fa-solid fa-fish"></i>
+                                </span>
+                                <div>
+                                    <strong class="text-white block text-sm">Treinamento Contra Phishing</strong>
+                                    Mais de 80% dos vazamentos ocorrem por engenharia social e e-mails fraudulentos.
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <span class="p-2 rounded bg-cyber-purple/10 text-cyber-purple border border-cyber-purple/30 shrink-0">
+                                    <i class="fa-solid fa-vault"></i>
+                                </span>
+                                <div>
+                                    <strong class="text-white block text-sm">Gerenciadores de Senha</strong>
+                                    Evite anotações em papel ou planilhas. Use cofres encriptados (Ex: 1Password, Bitwarden).
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-800 text-center">
+                        <span class="text-[11px] font-mono text-cyber-green">
+                            <i class="fa-solid fa-lock mr-1"></i> LGPD / GDPR Compliant Framework
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SEÇÃO 5: INTELIGÊNCIA ARTIFICIAL (SIMULADOR DE INSIGHTS) -->
+        <section id="ia" class="scroll-mt-28">
+            <div class="border-l-4 border-cyber-cyan pl-4 mb-8">
+                <h2 class="font-orbitron text-3xl sm:text-4xl font-bold text-white tracking-wide">
+                    05. INTELIGÊNCIA ARTIFICIAL NA GESTÃO
+                </h2>
+                <p class="text-gray-400 text-sm mt-1">Simulador de tomada de decisão estratégica via IA Generativa e Preditiva</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- COMNANDO / ASSISTENTE DE IA -->
+                <div class="lg:col-span-6 glass-panel p-6 sm:p-8 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-orbitron text-xl font-bold text-cyber-cyan flex items-center gap-2">
+                                <i class="fa-solid fa-robot"></i> LINKA AI Business Copilot
+                            </h3>
+                            <span class="px-2 py-0.5 rounded bg-cyber-green/20 text-cyber-green text-[10px] font-mono border border-cyber-green/40">ONLINE v4.8</span>
+                        </div>
+                        
+                        <p class="text-xs text-gray-300 mb-6">
+                            Selecione um cenário administrativo para que o modelo preditivo gere relatórios e ações automatizadas instantaneamente:
+                        </p>
+
+                        <!-- OPÇÕES DE CENÁRIOS -->
+                        <div class="space-y-3 mb-6">
+                            <button data-scenario="finance" class="ai-scenario-btn active w-full p-3 rounded-xl border border-cyber-cyan bg-cyber-cyan/10 text-left text-xs font-mono text-white flex items-center justify-between transition-all">
+                                <span><i class="fa-solid fa-coins text-cyber-cyan mr-2"></i> Otimização do Fluxo de Caixa</span>
+                                <i class="fa-solid fa-chevron-right text-cyber-cyan"></i>
+                            </button>
+                            <button data-scenario="hr" class="ai-scenario-btn w-full p-3 rounded-xl border border-gray-800 bg-gray-900/50 text-left text-xs font-mono text-gray-400 flex items-center justify-between transition-all hover:border-cyber-cyan">
+                                <span><i class="fa-solid fa-users text-cyber-magenta mr-2"></i> Retenção de Talentos & Turn over</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button data-scenario="supply" class="ai-scenario-btn w-full p-3 rounded-xl border border-gray-800 bg-gray-900/50 text-left text-xs font-mono text-gray-400 flex items-center justify-between transition-all hover:border-cyber-cyan">
+                                <span><i class="fa-solid fa-boxes-stacked text-cyber-purple mr-2"></i> Previsão de Estoque e Logística</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="run-ai-btn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-magenta text-black font-orbitron font-bold text-sm tracking-wider hover:opacity-90 shadow-neon-cyan transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> GERAR ANÁLISE DE IA
+                    </button>
+                </div>
+
+                <!-- RESPOSTA / OUTPUT DA IA -->
+                <div class="lg:col-span-6 glass-panel p-6 sm:p-8 rounded-2xl flex flex-col justify-between border-cyber-cyan/40">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-800 mb-4">
+                            <span class="font-mono text-xs text-cyber-cyan"><i class="fa-solid fa-brain"></i> INSIGHTS GERADOS</span>
+                            <span id="ai-status-tag" class="text-[10px] font-mono text-gray-500">Pronto para execução</span>
+                        </div>
+
+                        <!-- TERMINAL DE OUTPUT DA IA -->
+                        <div id="ai-output" class="font-mono text-xs space-y-3 leading-relaxed text-gray-300 min-h-[200px]">
+                            <p class="text-cyber-cyan">[SISTEMA PRONTO]: Escolha um cenário à esquerda e clique em "GERAR ANÁLISE DE IA" para iniciar a simulação com dados preditivos.</p>
+                        </div>
+                    </div>
+
+                    <!-- MÉTRICAS GERADAS -->
+                    <div class="grid grid-cols-3 gap-2 pt-4 border-t border-gray-800 text-center font-mono">
+                        <div class="bg-black/50 p-2 rounded border border-gray-800">
+                            <span class="text-[10px] text-gray-500 block">Precisão:</span>
+                            <span id="ai-metric-1" class="text-cyber-green text-xs font-bold">98.4%</span>
+                        </div>
+                        <div class="bg-black/50 p-2 rounded border border-gray-800">
+                            <span class="text-[10px] text-gray-500 block">Tempo Salvo:</span>
+                            <span id="ai-metric-2" class="text-cyber-cyan text-xs font-bold">~14h/sem</span>
+                        </div>
+                        <div class="bg-black/50 p-2 rounded border border-gray-800">
+                            <span class="text-[10px] text-gray-500 block">ROI Est.:</span>
+                            <span id="ai-metric-3" class="text-cyber-magenta text-xs font-bold">+32%</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER DA MOSTRA TECNOLÓGICA -->
+    <footer class="glass-panel border-t border-cyber-cyan/20 py-8 text-center text-xs text-gray-400 font-mono">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="font-orbitron font-bold text-cyber-cyan text-sm">LINKA</span>
+                <span>- Projeto de Exposição Acadêmica sobre Tecnologia na Administração</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>Hospedado via GitHub Pages</span>
+                <i class="fa-brands fa-github text-cyber-cyan text-base"></i>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGIC & SCRIPTS -->
+    <script>
+        // =========================================================================
+        // 1. ANIMATED BACKGROUND CANVAS (NETWORK PARTICLES)
+        // =========================================================================
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.radius = Math.random() * 1.5 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#00f3ff';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 50; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(0, 243, 255, ${1 - dist / 120 * 0.8})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateBg);
+        }
+
+        window.onload = function() {
+            animateBg();
+            initChart();
+        };
+
+        // =========================================================================
+        // 2. MOBILE MENU TOGGLE
+        // =========================================================================
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+        });
+
+        // =========================================================================
+        // 3. CHART.JS - PESQUISA DE ADOÇÃO TECNOLÓGICA (2018-2026)
+        // =========================================================================
+        function initChart() {
+            const ctxChart = document.getElementById('adoptionChart').getContext('2d');
+            
+            const gradient1 = ctxChart.createLinearGradient(0, 0, 0, 300);
+            gradient1.addColorStop(0, 'rgba(0, 243, 255, 0.4)');
+            gradient1.addColorStop(1, 'rgba(0, 243, 255, 0.0)');
+
+            const gradient2 = ctxChart.createLinearGradient(0, 0, 0, 300);
+            gradient2.addColorStop(0, 'rgba(255, 0, 85, 0.4)');
+            gradient2.addColorStop(1, 'rgba(255, 0, 85, 0.0)');
+
+            new Chart(ctxChart, {
+                type: 'line',
+                data: {
+                    labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026 (Est.)'],
+                    datasets: [
+                        {
+                            label: 'Adoção de Nuvem & ERP Integrado (%)',
+                            data: [35, 42, 58, 67, 74, 81, 86, 91, 95],
+                            borderColor: '#00f3ff',
+                            backgroundColor: gradient1,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#00f3ff',
+                            pointHoverRadius: 7
+                        },
+                        {
+                            label: 'Uso de IA e Automação RPA (%)',
+                            data: [8, 12, 19, 28, 39, 54, 68, 80, 89],
+                            borderColor: '#ff0055',
+                            backgroundColor: gradient2,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#ff0055',
+                            pointHoverRadius: 7
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e2e8f0',
+                                font: { family: 'Inter', size: 11 }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Orbitron', size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter' } },
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================================
+        // 4. MAPA DO BRASIL INTERATIVO (DADOS DE REGIONALIZAÇÃO)
+        // =========================================================================
+        const regionData = {
+            sudeste: {
+                name: "Região Sudeste",
+                badge: "LÍDER NACIONAL",
+                badgeColor: "bg-cyber-cyan text-black",
+                desc: "Hub de centros de inovação e sede das maiores corporações. Conta com a maior densidade de ERPs em nuvem e automação financeira do país.",
+                rate: "88.4%",
+                focus: "ERP Cloud & AI"
+            },
+            sul: {
+                name: "Região Sul",
+                badge: "ALTA ADOÇÃO",
+                badgeColor: "bg-cyber-green text-black",
+                desc: "Destaque na digitalização do Agronegócio (AgTechs) e automação de cadeias de suprimento e logística industrial.",
+                rate: "81.2%",
+                focus: "AgTech & Supply"
+            },
+            nordeste: {
+                name: "Região Nordeste",
+                badge: "EXPANSÃO RÁPIDA",
+                badgeColor: "bg-cyber-magenta text-white",
+                desc: "Forte crescimento impulsionado pelo Porto Digital (Recife) e modernização de PMEs e setor de serviços via SaaS.",
+                rate: "72.6%",
+                focus: "GovTech & SaaS"
+            },
+            centro: {
+                name: "Região Centro-Oeste",
+                badge: "DADOS & AGRO",
+                badgeColor: "bg-cyber-purple text-white",
+                desc: "Alta demanda por Business Intelligence (BI) e análise preditiva de mercado para gestão de grandes safras e exportação.",
+                rate: "76.9%",
+                focus: "BI & Analytics"
+            },
+            norte: {
+                name: "Região Norte",
+                badge: "EM TRANSFORMAÇÃO",
+                badgeColor: "bg-yellow-500 text-black",
+                desc: "Aceleração no uso de documentos digitais e conectividade via satélite para gestão remota e Polo Industrial de Manaus.",
+                rate: "64.1%",
+                focus: "Gestão Remota"
+            }
+        };
+
+        document.querySelectorAll('.map-region').forEach(region => {
+            region.addEventListener('click', function() {
+                document.querySelectorAll('.map-region').forEach(r => r.classList.remove('active'));
+                this.classList.add('active');
+
+                const key = this.getAttribute('data-region');
+                const data = regionData[key];
+
+                if (data) {
+                    document.getElementById('region-name').innerText = data.name;
+                    const badgeEl = document.getElementById('region-badge');
+                    badgeEl.innerText = data.badge;
+                    badgeEl.className = `px-2 py-0.5 rounded text-[10px] font-mono font-bold ${data.badgeColor}`;
+                    document.getElementById('region-desc').innerText = data.desc;
+                    document.getElementById('region-rate').innerText = data.rate;
+                    document.getElementById('region-focus').innerText = data.focus;
+                }
+            });
+        });
+
+        // =========================================================================
+        // 5. DESENVOLVIMENTO DE SITES (INTERACTIVE PIPELINE)
+        // =========================================================================
+        const devStepsData = {
+            ux: {
+                title: "1. UI/UX & Planejamento",
+                desc: "Tudo começa no protótipo. Mapeiam-se os requisitos de negócios, personas do cliente e jornada do usuário antes de escrever qualquer linha de código.",
+                code: `// Blueprint Scope Definition\nconst project = {\n  client: "Empresa X",\n  target: "Gestores",\n  layout: "Cyberpunk Responsive"\n};`,
+                preview: `<div class="border border-dashed border-cyber-cyan p-6 rounded-lg text-cyber-cyan"><i class="fa-solid fa-drafting-compass text-4xl mb-2 animate-bounce"></i><p class="font-orbitron text-sm">Design System & Protótipo</p></div>`
+            },
+            html: {
+                title: "2. Estruturação em HTML5",
+                desc: "O HTML fornece o esqueleto da aplicação. Define os cabeçalhos, seções de dados, tabelas de indicadores e formulários organizados de forma semântica.",
+                code: `<header>\n  <h1>LINKA System</h1>\n  <nav>Menu de Navegação</nav>\n</header>`,
+                preview: `<div class="p-4 bg-gray-900 text-left font-mono text-xs text-white rounded border border-gray-700 w-full"><div class="h-4 bg-gray-700 mb-2 w-3/4"></div><div class="h-4 bg-gray-800 mb-1 w-full"></div><div class="h-4 bg-gray-800 w-1/2"></div></div>`
+            },
+            css: {
+                title: "3. Estilização & UI com CSS3 / Tailwind",
+                desc: "Aplica paleta de cores futurista, flexbox, CSS grid, efeitos de neon e responsividade para garantir que o site funcione perfeitamente em celulares e computadores.",
+                code: `.card {\n  background: rgba(15, 16, 35, 0.8);\n  box-shadow: 0 0 15px #00f3ff;\n  border-radius: 12px;\n}`,
+                preview: `<div class="p-4 glass-panel rounded-xl border border-cyber-cyan shadow-neon-cyan text-cyber-cyan font-orbitron font-bold text-sm">Visual Neon Aplicado!</div>`
+            },
+            js: {
+                title: "4. Lógica de Negócios & JavaScript",
+                desc: "O JS adiciona vida e interatividade: gráficos em tempo real, validação de dados, menus dinâmicos e consumo de dados de APIs externas.",
+                code: `function calcGrowth(val) {\n  return val * 1.45; // Automação\n}\nconsole.log("Sistema Ativo!");`,
+                preview: `<button onclick="this.innerText='✨ Evento Disparado!'" class="px-4 py-2 bg-cyber-magenta text-white font-mono text-xs rounded shadow-neon-magenta hover:scale-105 transition-all">Clique para Interagir</button>`
+            },
+            backend: {
+                title: "5. Backend & Banco de Dados",
+                desc: "Servidores em nuvem que armazenam dados estratégicos da empresa com total segurança, criptografia e suporte a altas cargas de acessos.",
+                code: `SELECT company_name, tech_index \nFROM management_db \nWHERE active = true;`,
+                preview: `<div class="text-cyber-green font-mono text-xs"><i class="fa-solid fa-database text-3xl mb-2 animate-pulse"></i><p>Conexão DB Criptografada [OK]</p></div>`
+            },
+            deploy: {
+                title: "6. Hospedagem via GitHub Pages",
+                desc: "O código final é publicado diretamente no repositório do GitHub e distribuído globalmente via CDN gratuita e segura.",
+                code: `# Deploy no GitHub Pages\ngit add .\ngit commit -m "Site LINKA Finalizado"\ngit push origin main`,
+                preview: `<div class="text-white font-mono text-xs"><i class="fa-brands fa-github text-4xl text-cyber-cyan mb-2"></i><p class="text-cyber-green font-bold">Online em https://linka.github.io</p></div>`
+            }
+        };
+
+        document.querySelectorAll('.dev-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.dev-btn').forEach(b => {
+                    b.classList.remove('active', 'border-cyber-cyan', 'bg-cyber-cyan/20', 'text-cyber-cyan');
+                    b.classList.add('border-gray-700', 'bg-gray-900/50', 'text-gray-400');
+                });
+
+                this.classList.add('active', 'border-cyber-cyan', 'bg-cyber-cyan/20', 'text-cyber-cyan');
+                this.classList.remove('border-gray-700', 'bg-gray-900/50', 'text-gray-400');
+
+                const stepKey = this.getAttribute('data-step');
+                const data = devStepsData[stepKey];
+
+                if (data) {
+                    document.getElementById('step-title').innerText = data.title;
+                    document.getElementById('step-desc').innerText = data.desc;
+                    document.getElementById('step-code').innerText = data.code;
+                    document.getElementById('preview-stage').innerHTML = data.preview;
+                }
+            });
+        });
+
+        // =========================================================================
+        // 6. TESTADOR DE SENHAS DIVERTIDO (SEGURANÇA DIGITAL)
+        // =========================================================================
+        const passInput = document.getElementById('pass-input');
+        const togglePassBtn = document.getElementById('toggle-pass');
+        const passStrengthBar = document.getElementById('pass-strength-bar');
+        const passStatus = document.getElementById('pass-status');
+        const passComment = document.getElementById('pass-comment');
+        const passIcon = document.getElementById('pass-icon');
+
+        togglePassBtn.addEventListener('click', () => {
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            togglePassBtn.innerHTML = type === 'password' ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
+        });
+
+        passInput.addEventListener('input', function() {
+            const val = this.value;
+            let score = 0;
+
+            const hasLength = val.length >= 8;
+            const hasNum = /\d/.test(val);
+            const hasUpper = /[A-Z]/.test(val);
+            const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(val);
+
+            // Update Checklist
+            updateChecklist('chk-length', hasLength);
+            updateChecklist('chk-num', hasNum);
+            updateChecklist('chk-upper', hasUpper);
+            updateChecklist('chk-special', hasSpecial);
+
+            if (hasLength) score++;
+            if (hasNum) score++;
+            if (hasUpper) score++;
+            if (hasSpecial) score++;
+
+            if (val.length === 0) {
+                passStrengthBar.style.width = '0%';
+                passStatus.innerText = 'Aguardando senha...';
+                passStatus.className = 'font-orbitron font-bold text-sm text-gray-400';
+                passComment.innerText = 'Digite algo acima para simular os algoritmos de segurança!';
+                passIcon.className = 'fa-solid fa-shield-cat text-2xl text-gray-500 mt-0.5';
+                return;
+            }
+
+            if (score <= 1) {
+                passStrengthBar.style.width = '25%';
+                passStrengthBar.className = 'h-full transition-all duration-500 bg-red-500';
+                passStatus.innerText = 'SENHA NÍVEL: PÁLIDA / FRACA';
+                passStatus.className = 'font-orbitron font-bold text-sm text-red-500';
+                passComment.innerText = '⚠️ Até um gato andando no teclado ou um estagiário com café descobre em 2 segundos!';
+                passIcon.className = 'fa-solid fa-skull-crossbones text-2xl text-red-500 mt-0.5';
+            } else if (score === 2 || score === 3) {
+                passStrengthBar.style.width = '65%';
+                passStrengthBar.className = 'h-full transition-all duration-500 bg-yellow-500';
+                passStatus.innerText = 'SENHA NÍVEL: MÉDIA / RAZOÁVEL';
+                passStatus.className = 'font-orbitron font-bold text-sm text-yellow-500';
+                passComment.innerText = '🛡️ Aguenta uns ataques simples, mas com um dicionário de hackers cai em poucas horas.';
+                passIcon.className = 'fa-solid fa-shield-halved text-2xl text-yellow-500 mt-0.5';
+            } else {
+                passStrengthBar.style.width = '100%';
+                passStrengthBar.className = 'h-full transition-all duration-500 bg-cyber-green';
+                passStatus.innerText = 'SENHA NÍVEL: ULTRA HACKER PROOF!';
+                passStatus.className = 'font-orbitron font-bold text-sm text-cyber-green';
+                passComment.innerText = '🚀 Nem os agentes da Matrix conseguem quebrar essa senha! Dados corporativos protegidos.';
+                passIcon.className = 'fa-solid fa-user-ninja text-2xl text-cyber-green mt-0.5';
+            }
+        });
+
+        function updateChecklist(id, valid) {
+            const el = document.getElementById(id);
+            if (valid) {
+                el.className = 'p-2 rounded bg-cyber-green/20 text-cyber-green border border-cyber-green/50 text-center font-bold';
+            } else {
+                el.className = 'p-2 rounded bg-gray-900/60 text-gray-500 border border-gray-800 text-center';
+            }
+        }
+
+        // =========================================================================
+        // 7. INTELIGÊNCIA ARTIFICIAL (SIMULADOR DE DECISÕES)
+        // =========================================================================
+        const aiScenarios = {
+            finance: {
+                output: [
+                    "🔍 [ANALISANDO HISTÓRICO FINANCEIRO...]",
+                    "📈 Detectado gargalo de 12% no fluxo de caixa devido a inadimplência em faturas.",
+                    "⚡ [AÇÃO AUTOMÁTICA RECOMENDADA]: Ativar régua de cobrança via WhatsApp automatizado.",
+                    "🎯 [PROJEÇÃO]: Recuperação estimada de R$ 45.000 em 15 dias uteis."
+                ],
+                m1: "98.8%", m2: "~18h/sem", m3: "+38%"
+            },
+            hr: {
+                output: [
+                    "🧬 [Mapeando Engajamento da Equipe...]",
+                    "⚠️ Risco de turnover identificado nos setores de tecnologia e finanças.",
+                    "⚡ [AÇÃO RECOMENDADA]: Reajuste de benefícios flexíveis e plano de carreira personalizado.",
+                    "🎯 [PROJEÇÃO]: Redução de 40% na rotatividade no próximo trimestre."
+                ],
+                m1: "95.2%", m2: "~12h/sem", m3: "+24%"
+            },
+            supply: {
+                output: [
+                    "📦 [Conectando ao Estoque IoT e Fornecedores...]",
+                    "🔮 Previsão de escassez da matéria-prima X devido a atrasos de frete internacional.",
+                    "⚡ [AÇÃO RECOMENDADA]: Disparar pedido de compra automático com fornecedor regional B.",
+                    "🎯 [PROJEÇÃO]: Zero paradas na linha de produção e economia de 8% em frete."
+                ],
+                m1: "99.1%", m2: "~22h/sem", m3: "+45%"
+            }
+        };
+
+        let currentAiScenario = 'finance';
+
+        document.querySelectorAll('.ai-scenario-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.ai-scenario-btn').forEach(b => {
+                    b.classList.remove('active', 'border-cyber-cyan', 'bg-cyber-cyan/10', 'text-white');
+                    b.classList.add('border-gray-800', 'bg-gray-900/50', 'text-gray-400');
+                    b.querySelector('.fa-chevron-right')?.classList.remove('text-cyber-cyan');
+                });
+
+                this.classList.add('active', 'border-cyber-cyan', 'bg-cyber-cyan/10', 'text-white');
+                this.classList.remove('border-gray-800', 'bg-gray-900/50', 'text-gray-400');
+                this.querySelector('.fa-chevron-right')?.classList.add('text-cyber-cyan');
+
+                currentAiScenario = this.getAttribute('data-scenario');
+            });
+        });
+
+        document.getElementById('run-ai-btn').addEventListener('click', function() {
+            const data = aiScenarios[currentAiScenario];
+            const outputEl = document.getElementById('ai-output');
+            const statusTag = document.getElementById('ai-status-tag');
+
+            statusTag.innerText = 'Processando tensores...';
+            statusTag.className = 'text-[10px] font-mono text-cyber-cyan animate-pulse';
+
+            outputEl.innerHTML = `<div class="text-cyber-cyan"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Executando algoritmo preditivo...</div>`;
+
+            setTimeout(() => {
+                let html = '';
+                data.output.forEach((line, index) => {
+                    html += `<p class="animate-fade-in">${line}</p>`;
+                });
+                outputEl.innerHTML = html;
+
+                document.getElementById('ai-metric-1').innerText = data.m1;
+                document.getElementById('ai-metric-2').innerText = data.m2;
+                document.getElementById('ai-metric-3').innerText = data.m3;
+
+                statusTag.innerText = 'Análise Concluída';
+                statusTag.className = 'text-[10px] font-mono text-cyber-green font-bold';
+            }, 800);
+        });
+    </script>
+</body>
+</html>
